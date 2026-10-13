@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #2c2824;
+    color: #f5f0ea;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, .font-serif {
+    font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+    letter-spacing: -0.02em;
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+/* Eliminate Grainy Noise Overlay to provide 100% crystal-clear Retina sharpness */
+.noise-overlay {
+  display: none !important;
+}
+
+/* Sondaven Signature Agency Micro-interactions */
+.nav-rollup {
+  position: relative;
+  overflow: hidden;
+  height: 1.25em;
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.nav-rollup-inner {
+  transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.group:hover .nav-rollup-inner,
+a:hover .nav-rollup-inner,
+button:hover .nav-rollup-inner {
+  transform: translateY(-50%);
+}
+
+/* Text highlight scrub word styles */
+.highlight-word {
+  transition: color 0.25s ease, opacity 0.25s ease;
+}
+
+/* Infinite Marquee Animation */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: 200%;
+  animation: marquee 28s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Custom minimal scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #a89474;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2c2824;
+}
