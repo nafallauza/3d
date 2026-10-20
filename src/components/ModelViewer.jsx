@@ -5,19 +5,13 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import { Compass, Eye, Sparkles, Move, Maximize2 } from 'lucide-react';
 
 const SECTION_POSITIONS = [
-  { id: 'hero', x: 0.85, y: -0.28, z: 0.15, scale: 0.88 },
-  { id: 'prologue', x: 1.55, y: 0.0, z: 0.1, scale: 0.82 },
-  { id: 'about', x: -1.5, y: 0.0, z: 0.2, scale: 0.85 },
-  { id: 'location', x: 1.5, y: -0.1, z: 0.1, scale: 0.85 },
-  { id: 'residences', x: 2.2, y: 0.8, z: -3.5, scale: 0.45 },
-  { id: 'reel', x: 0, y: 0, z: -8.0, scale: 0.1 },
-  { id: 'canopy', x: 0, y: -1.5, z: -2.5, scale: 0.5 },
-  { id: 'calculator', x: -1.5, y: 0.0, z: 0.2, scale: 0.88 },
-  { id: 'seasons', x: 1.5, y: 0.0, z: 0.2, scale: 0.88 },
-  { id: 'credentials', x: -1.5, y: 0.0, z: 0.2, scale: 0.85 },
-  { id: 'gallery', x: 0, y: 0, z: -6.0, scale: 0.2 },
-  { id: 'faq', x: -1.5, y: 0.0, z: 0.1, scale: 0.85 },
-  { id: 'inquiry', x: 1.5, y: -0.1, z: 0.1, scale: 0.85 },
+  { id: 'hero', x: 0.85, y: -0.15, z: 0.1, scale: 0.95 },
+  { id: 'tentang', x: -1.35, y: 0.0, z: 0.15, scale: 0.88 },
+  { id: 'filosofi', x: 1.35, y: -0.1, z: 0.15, scale: 0.92 },
+  { id: 'layanan', x: -1.3, y: 0.0, z: 0.1, scale: 0.86 },
+  { id: 'visi-misi', x: 1.3, y: 0.0, z: 0.2, scale: 0.88 },
+  { id: 'mitra', x: 0, y: -0.6, z: -2.2, scale: 0.45 },
+  { id: 'kontak', x: -1.2, y: 0.0, z: 0.1, scale: 0.85 },
 ];
 
 export default function ModelViewer({ scrollProgress }) {
@@ -73,23 +67,23 @@ export default function ModelViewer({ scrollProgress }) {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
+    renderer.toneMappingExposure = 1.0;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     rendererRef.current = renderer;
 
-    // 4. Generate Studio HDRI Environment Reflections (Liquid Gloss Lacquer)
+    // 4. Subtle Studio HDRI Environment Reflections (Natural, Non-Bleaching)
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     pmremGenerator.compileEquirectangularShader();
     scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
     pmremGenerator.dispose();
 
-    // 5. Studio Key & Rim Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 2.2);
+    // 5. Clean, Neutral Studio Lighting (Preserves authentic Blender material colors)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.6);
     scene.add(ambientLight);
 
-    const sunLight = new THREE.DirectionalLight(0xffffff, 3.2);
-    sunLight.position.set(6, 10, 6);
+    const sunLight = new THREE.DirectionalLight(0xffffff, 2.4);
+    sunLight.position.set(5, 8, 5);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.width = 1024;
     sunLight.shadow.mapSize.height = 1024;
@@ -97,26 +91,18 @@ export default function ModelViewer({ scrollProgress }) {
     sunLight.shadow.camera.far = 25;
     scene.add(sunLight);
 
-    const fillLight = new THREE.DirectionalLight(0xf5f0ea, 2.0);
-    fillLight.position.set(-6, 3, -4);
+    const fillLight = new THREE.DirectionalLight(0xf1f5f9, 1.4);
+    fillLight.position.set(-5, 3, -3);
     scene.add(fillLight);
 
-    const rimLight = new THREE.DirectionalLight(0xe8eff8, 2.8);
-    rimLight.position.set(0, -5, -6);
+    const rimLight = new THREE.DirectionalLight(0xe2e8f0, 1.6);
+    rimLight.position.set(0, -4, -5);
     scene.add(rimLight);
 
-    // Chromatic Studio Bounce Lights (Mirroring Model's Ribbons)
-    const violetLight = new THREE.PointLight(0xa855f7, 2.8, 10);
-    violetLight.position.set(2.5, 2.5, 2.5);
-    scene.add(violetLight);
-
-    const amberLight = new THREE.PointLight(0xf59e0b, 2.8, 10);
-    amberLight.position.set(-2.5, -2, 2.5);
-    scene.add(amberLight);
-
-    const cyanLight = new THREE.PointLight(0x06b6d4, 2.2, 10);
-    cyanLight.position.set(0, 3, -3);
-    scene.add(cyanLight);
+    // Soft Top Key Light (Balanced white to preserve native hue)
+    const topKeyLight = new THREE.PointLight(0xffffff, 1.5, 12);
+    topKeyLight.position.set(0, 4, 2);
+    scene.add(topKeyLight);
 
     // Soft Ground Shadow
     const shadowGeo = new THREE.PlaneGeometry(16, 16);
@@ -127,7 +113,7 @@ export default function ModelViewer({ scrollProgress }) {
     shadowPlane.receiveShadow = true;
     scene.add(shadowPlane);
 
-    // 6. Load GLB Model preserving Blender's native materials and vertex normals
+    // 6. Load GLB Model preserving Blender's native materials, colors & textures
     const loader = new GLTFLoader();
     loader.load(
       '/model.glb',
@@ -147,25 +133,20 @@ export default function ModelViewer({ scrollProgress }) {
         baseScaleRef.current = targetScale;
         model.scale.setScalar(targetScale);
 
-        // Retain original Blender vertex normals & elevate materials to luxury clearcoat lacquer
+        // Keep Blender's authentic colors, vertex colors, textures, and roughness intact
         model.traverse((child) => {
           if (child.isMesh) {
             child.castShadow = true;
             child.receiveShadow = true;
             if (child.material) {
-              const upgradeMat = (mat) => {
-                mat.roughness = 0.12;
-                mat.metalness = 0.05;
-                mat.clearcoat = 1.0;
-                mat.clearcoatRoughness = 0.05;
-                mat.reflectivity = 0.98;
-                mat.envMapIntensity = 2.0;
+              const preserveMat = (mat) => {
+                mat.envMapIntensity = 0.35;
                 mat.needsUpdate = true;
               };
               if (Array.isArray(child.material)) {
-                child.material.forEach(upgradeMat);
+                child.material.forEach(preserveMat);
               } else {
-                upgradeMat(child.material);
+                preserveMat(child.material);
               }
             }
           }

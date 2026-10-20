@@ -1,157 +1,116 @@
-import React, { useRef, useState } from 'react';
-import { Play, Pause, ArrowUpRight } from 'lucide-react';
+import React from 'react';
+import { ArrowUpRight, CheckCircle2, ShieldCheck, Cpu, GitCommit } from 'lucide-react';
 
 export default function AboutSection({ onOpenConsultation }) {
-  const videoRef = useRef(null);
-  const [isPlaying, setIsPlaying] = useState(true);
-
-  const toggleVideo = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        videoRef.current.play();
-        setIsPlaying(true);
-      }
-    }
-  };
-
   return (
-    <div id="about" className="relative w-full">
-      {/* 1. Needle Transition from Dark into Sand Light Section */}
-      <div className="w-full overflow-hidden leading-none -mb-[2px] bg-[#2c2824]">
-        <img
-          src="/assets/transition-light-01.svg"
-          alt="Section transition needle fringe"
-          className="w-full h-20 md:h-36 object-fill block"
-        />
-      </div>
+    <section id="tentang" className="relative w-full bg-[#0D192E] text-[#F8FAFC] py-28 md:py-36 px-6 md:px-14 border-t border-white/10 z-20">
+      <div className="max-w-7xl mx-auto">
+        {/* Section Header */}
+        <div className="border-b border-white/15 pb-10 mb-16">
+          <div className="flex items-center space-x-3 mb-4 font-mono text-xs text-[#0B70AD] tracking-widest uppercase">
+            <span className="w-2 h-2 rounded-full bg-[#0B70AD]" />
+            <span>[ 02 / IDENTITAS & PENDEKATAN ]</span>
+          </div>
 
-      {/* 2. Main Sand Ochre Section (Authentic Sondaven bg-light #a89474) */}
-      <section className="bg-[#a89474] text-[#2c2824] py-24 md:py-36 px-6 md:px-14 relative z-20">
-        <div className="max-w-7xl mx-auto">
-          {/* Top Title: Son Daven by blago */}
-          <div className="border-b border-[#2c2824]/20 pb-12 mb-16">
-            <div className="flex items-center space-x-3 mb-4 font-mono text-xs text-[#2c2824] tracking-widest uppercase font-semibold">
-              <span className="w-2 h-2 rounded-full bg-[#2c2824]" />
-              <span>[ 03 / THE PHILOSOPHY & CONCEPT ]</span>
-            </div>
-
-            <div className="flex flex-col md:flex-row md:items-baseline justify-between">
-              <h2 className="font-serif text-6xl md:text-8xl lg:text-9xl text-[#2c2824] tracking-tighter leading-none">
-                Son Daven
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+            <div>
+              <h2 className="font-serif text-4xl md:text-6xl lg:text-7xl text-white tracking-tight leading-tight">
+                Tentang Kami
               </h2>
-              <div className="font-mono text-xs md:text-sm tracking-widest text-[#2c2824]/80 uppercase mt-4 md:mt-0 flex items-center space-x-2 font-medium">
-                <span>BY BLAGO DEVELOPMENT</span>
-                <span>•</span>
-                <span>YAREMCHE</span>
+              <div className="font-mono text-xs md:text-sm tracking-widest text-[#0B70AD] uppercase mt-3">
+                PENDEKATAN REKAYASA TERSTRUKTUR & ADAPTIF
               </div>
+            </div>
+
+            <p className="font-sans text-sm md:text-base text-white/70 max-w-xl font-light leading-relaxed">
+              Tara Rekayasa dibangun di atas fondasi integritas teknis, disiplin analisis mendalam, dan ketangkasan adaptasi untuk menjawab kompleksitas kebutuhan rekayasa modern.
+            </p>
+          </div>
+        </div>
+
+        {/* 2 Column Editorial Narrative */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start mb-20">
+          {/* Left Column: Filosofi Kerja */}
+          <div className="lg:col-span-6 space-y-6">
+            <h3 className="font-serif text-2xl md:text-3xl text-white tracking-tight">
+              Presisi yang Terukur, Inovasi yang Berdampak
+            </h3>
+
+            <p className="font-sans text-sm md:text-base text-white/75 leading-relaxed font-light">
+              Kami percaya bahwa keberhasilan setiap rancang bangun dan pemecahan masalah rekayasa berakar dari ketelitian dalam detail terkecil. Setiap perhitungan, pemodelan, dan keputusan struktural didasarkan pada metodologi valid yang dapat diuji dan dipertanggungjawabkan.
+            </p>
+
+            <p className="font-sans text-sm md:text-base text-white/75 leading-relaxed font-light">
+              Di saat yang sama, dunia rekayasa terus bergerak dinamis. Tara Rekayasa memadukan kepatuhan terhadap standar teknis yang ketat dengan cara berpikir inovatif dan fleksibel, memungkinkan kami menghasilkan solusi yang tidak hanya kokoh, tetapi juga adaptif terhadap perkembangan teknologi dan kebutuhan lapangan.
+            </p>
+
+            <div className="pt-4">
+              <button
+                onClick={onOpenConsultation}
+                className="inline-flex items-center space-x-2 border border-[#0B70AD] hover:border-white bg-[#1B3459]/50 hover:bg-[#0B70AD] text-white px-5 py-3 font-mono text-xs uppercase tracking-widest transition-all cursor-pointer"
+              >
+                <span>[ KONSULTASIKAN KEBUTUHAN REKAYASA ]</span>
+                <ArrowUpRight size={14} />
+              </button>
             </div>
           </div>
 
-          {/* Two Editorial Columns: About Us & Concept */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start mb-24">
-            {/* Left Column: About Us */}
-            <div className="lg:col-span-6 flex flex-col justify-between">
-              <div>
-                <h3 className="font-serif text-3xl md:text-4xl text-[#2c2824] tracking-tight mb-6 font-bold">
-                  About Us
-                </h3>
-                <div className="w-16 h-[1.5px] bg-[#2c2824]/40 mb-8" />
-                <p className="font-sans text-base md:text-lg text-[#2c2824]/90 leading-relaxed font-light mb-8">
-                  Son Daven is a new place of power in the Carpathians, where Hutsul culture is reinterpreted through architecture, spatial design, hospitality, and contemporary art. Here, traditions take on a new form, and the ancient spirit of the Carpathians merges with modern comfort.
-                </p>
-              </div>
-
-              <div className="pt-4">
-                <button
-                  onClick={() => onOpenConsultation?.('General Architecture Consultation')}
-                  data-cursor="CONSULT"
-                  className="inline-flex items-center space-x-3 px-7 py-4 bg-[#2c2824] hover:bg-[#1a1715] text-[#f5f0ea] font-mono text-xs tracking-widest uppercase transition-colors cursor-pointer shadow-lg"
-                >
-                  <span>Request Consultation</span>
-                  <ArrowUpRight size={14} />
-                </button>
-              </div>
+          {/* Right Column: 4 Pilar Pendekatan */}
+          <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="bg-[#070E1A] p-6 border border-white/10 hover:border-[#0B70AD]/60 transition-all">
+              <div className="font-mono text-xs text-[#0B70AD] mb-3">[ 01 ]</div>
+              <h4 className="font-serif text-xl text-white mb-2">Ketelitian Detail</h4>
+              <p className="font-sans text-xs text-white/60 leading-relaxed font-light">
+                Perhatian penuh terhadap toleransi teknis, integritas kalkulasi, dan konsistensi spesifikasi di setiap tahap implementasi.
+              </p>
             </div>
 
-            {/* Right Column: Concept + Interactive Video Card */}
-            <div className="lg:col-span-6 flex flex-col justify-between">
-              <div>
-                <h3 className="font-serif text-3xl md:text-4xl text-[#2c2824] tracking-tight mb-6 font-bold">
-                  Concept
-                </h3>
-                <div className="w-16 h-[1.5px] bg-[#2c2824]/40 mb-8" />
-                <p className="font-sans text-base md:text-lg text-[#2c2824]/90 leading-relaxed font-light mb-4">
-                  The architecture of the complex grows from the mountains, preserving their strength in stone and warmth in wood. Panoramic terraces open up views from which the spirit intercepts, and traditions intertwine with modernity, creating a new format of recreation: deep, meaningful, filled with the energy of nature and culture of Hutsul region.
-                </p>
-                <p className="font-serif text-lg md:text-xl italic text-[#2c2824] leading-relaxed mb-8 font-medium">
-                  “A dream of a place where legends, nature, and modern comforts come together as one.”
-                </p>
-              </div>
-
-              {/* Video Card: "See you in a dream" */}
-              <div className="relative group overflow-hidden border border-[#2c2824]/20 bg-black/10 mt-4 shadow-xl">
-                <div className="relative h-64 md:h-72 w-full overflow-hidden">
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    className="w-full h-full object-cover"
-                  >
-                    <source src="/assets/son-daven_short.mp4" type="video/mp4" />
-                  </video>
-
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-
-                  {/* Play / Pause Toggle Button */}
-                  <button
-                    onClick={toggleVideo}
-                    data-cursor="PLAY"
-                    className="absolute top-4 right-4 w-10 h-10 bg-[#2c2824] text-white flex items-center justify-center rounded-full transition-transform transform hover:scale-110 shadow-lg cursor-pointer"
-                    aria-label={isPlaying ? 'Pause Video' : 'Play Video'}
-                  >
-                    {isPlaying ? <Pause size={16} /> : <Play size={16} className="ml-0.5" />}
-                  </button>
-
-                  <div className="absolute bottom-4 left-4 font-mono text-[10px] tracking-widest uppercase text-white bg-[#2c2824]/90 px-3 py-1 backdrop-blur-sm">
-                    [ CINEMATIC CARPATHIAN TEASER ]
-                  </div>
-                </div>
-
-                <div className="p-4 bg-[#2c2824] text-[#f5f0ea] border-t border-[#2c2824]/10 flex items-center justify-between font-mono text-xs">
-                  <span className="font-semibold uppercase tracking-wider text-amber-300">See you in a dream</span>
-                  <span className="text-[10px] text-white/70">YAREMCHE ARCHIVE • 0:18</span>
-                </div>
-              </div>
+            <div className="bg-[#070E1A] p-6 border border-white/10 hover:border-[#0B70AD]/60 transition-all">
+              <div className="font-mono text-xs text-[#0B70AD] mb-3">[ 02 ]</div>
+              <h4 className="font-serif text-xl text-white mb-2">Inovasi Terarah</h4>
+              <p className="font-sans text-xs text-white/60 leading-relaxed font-light">
+                Pemanfaatan teknologi pemodelan 3D dan komputasi terkini untuk mengoptimalkan efisiensi dan kualitas luaran.
+              </p>
             </div>
-          </div>
 
-          {/* Full-width Architectural Render Banner */}
-          <div className="relative w-full h-[45vh] md:h-[65vh] overflow-hidden border border-[#2c2824]/25 shadow-2xl">
-            <img
-              src="/assets/final-3.webp"
-              alt="Son Daven Architectural Vista"
-              className="w-full h-full object-cover object-center filter contrast-105 hover:scale-105 transition-transform duration-1000"
-            />
-            <div className="absolute bottom-6 left-6 md:left-10 font-mono text-xs text-white bg-[#2c2824]/90 px-3.5 py-2 backdrop-blur-md">
-              [ PANORAMIC MONOLITH TERRACE • FOOTHILLS OF YAREMCHE ]
+            <div className="bg-[#070E1A] p-6 border border-white/10 hover:border-[#C91C22]/60 transition-all">
+              <div className="font-mono text-xs text-[#C91C22] mb-3">[ 03 ]</div>
+              <h4 className="font-serif text-xl text-white mb-2">Struktur Adaptif</h4>
+              <p className="font-sans text-xs text-white/60 leading-relaxed font-light">
+                Fleksibilitas metodologis yang responsif terhadap variabel lapangan, batasan operasional, serta kebutuhan klien.
+              </p>
+            </div>
+
+            <div className="bg-[#070E1A] p-6 border border-white/10 hover:border-white/60 transition-all">
+              <div className="font-mono text-xs text-white/50 mb-3">[ 04 ]</div>
+              <h4 className="font-serif text-xl text-white mb-2">Kolaborasi Terbuka</h4>
+              <p className="font-sans text-xs text-white/60 leading-relaxed font-light">
+                Membangun sinergi transparan dengan mitra lintas disiplin demi menghasilkan solusi rekayasa holistik.
+              </p>
             </div>
           </div>
         </div>
-      </section>
 
-      {/* 3. Needle Transition from Sand Section back into Dark Section */}
-      <div className="w-full overflow-hidden leading-none -mt-[2px] bg-[#a89474]">
-        <img
-          src="/assets/transition-dark-04.svg"
-          alt="Section transition needle fringe back to dark"
-          className="w-full h-20 md:h-36 object-fill block"
-        />
+        {/* Engineering Metric Highlights */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 border-t border-white/15 pt-10 font-mono">
+          <div>
+            <div className="text-2xl md:text-4xl font-serif text-[#0B70AD] font-bold">100%</div>
+            <div className="text-[11px] text-white/60 uppercase mt-1 tracking-wider">Komitmen Presisi</div>
+          </div>
+          <div>
+            <div className="text-2xl md:text-4xl font-serif text-white font-bold">Terstruktur</div>
+            <div className="text-[11px] text-white/60 uppercase mt-1 tracking-wider">Metodologi Kerja</div>
+          </div>
+          <div>
+            <div className="text-2xl md:text-4xl font-serif text-[#C91C22] font-bold">Adaptif</div>
+            <div className="text-[11px] text-white/60 uppercase mt-1 tracking-wider">Respon Tantangan</div>
+          </div>
+          <div>
+            <div className="text-2xl md:text-4xl font-serif text-white font-bold">Sinergis</div>
+            <div className="text-[11px] text-white/60 uppercase mt-1 tracking-wider">Kemitraan Lintas Disiplin</div>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

@@ -7,27 +7,42 @@ export default {
   theme: {
     extend: {
       colors: {
-        sand: {
-          DEFAULT: '#a89474',
-          light: '#c7b89f',
-          dark: '#877353',
-          10: 'rgba(168, 148, 116, 0.1)',
-          20: 'rgba(168, 148, 116, 0.2)',
-          50: 'rgba(168, 148, 116, 0.5)',
+        tara: {
+          navy: '#1B3459',
+          blue: '#0B70AD',
+          red: '#C91C22',
+          dark: '#070E1A',
+          surface: '#0D192E',
+          slate: '#142542',
+          light: '#F8FAFC',
+        },
+        navy: {
+          DEFAULT: '#1B3459',
+          dark: '#0B1426',
+          deep: '#070E1A',
+        },
+        primary: {
+          DEFAULT: '#0B70AD',
+          dark: '#085584',
+          light: '#1B8DD3',
+        },
+        accent: {
+          red: '#C91C22',
+          light: '#E5383E',
         },
         charcoal: {
-          DEFAULT: '#2c2824',
-          deep: '#1a1816',
-          light: '#3d3732',
-          10: 'rgba(44, 40, 36, 0.1)',
-          20: 'rgba(44, 40, 36, 0.2)',
-          50: 'rgba(44, 40, 36, 0.5)',
+          DEFAULT: '#0D192E',
+          deep: '#070E1A',
+          light: '#142542',
+          10: 'rgba(13, 25, 46, 0.1)',
+          20: 'rgba(13, 25, 46, 0.2)',
+          50: 'rgba(13, 25, 46, 0.5)',
         },
-        cream: '#f5f1ea',
+        cream: '#070E1A',
       },
       fontFamily: {
-        serif: ['"Playfair Display"', 'Georgia', 'serif'],
-        sans: ['"Inter"', 'system-ui', 'sans-serif'],
+        serif: ['"Playfair Display"', '"Cormorant Garamond"', 'Georgia', 'serif'],
+        sans: ['"Plus Jakarta Sans"', '"Inter"', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
       },
       letterSpacing: {
