@@ -30,7 +30,7 @@ export default function VisiMisiSection() {
   ];
 
   return (
-    <section id="visi-misi" className="relative w-full bg-[#070E1A] text-[#F8FAFC] py-28 md:py-36 px-6 md:px-14 border-t border-white/10 z-20">
+    <section id="visi-misi" className="relative w-full bg-transparent text-[#F8FAFC] py-28 md:py-36 px-6 md:px-14 border-t border-white/10 z-20">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="border-b border-white/15 pb-10 mb-16">

@@ -6,12 +6,14 @@ export default function NavigationDrawer({ isOpen, onClose, isPlayingSound, onTo
 
   const navLinks = [
     { num: '01', href: '#hero', title: 'Beranda', subtitle: 'Presisi & Inovasi Rekayasa' },
-    { num: '02', href: '#tentang', title: 'Tentang Kami', subtitle: 'Identitas, Ketelitian & Pendekatan Terstruktur' },
-    { num: '03', href: '#filosofi', title: 'Filosofi Logo', subtitle: 'Atom, Segitiga, Gelombang & Ruang Terbuka' },
-    { num: '04', href: '#layanan', title: 'Layanan Rekayasa', subtitle: 'Perancangan, Konsultasi & Integrasi Sistem' },
-    { num: '05', href: '#visi-misi', title: 'Visi & Misi', subtitle: 'Arah Strategis & Komitmen Berkelanjutan' },
-    { num: '06', href: '#mitra', title: 'Mitra & Ekosistem', subtitle: 'Jaringan Kolaborasi Industri Terbuka' },
-    { num: '07', href: '#kontak', title: 'Kontak & Konsultasi', subtitle: 'Inisiasi Sinergi & Rekayasa Presisi' },
+    { num: '02', href: '#manifesto', title: 'Manifesto', subtitle: 'Prinsip Ketelitian & Integritas' },
+    { num: '03', href: '#tentang', title: 'Tentang Kami', subtitle: 'Identitas, Ketelitian & Metodologi' },
+    { num: '04', href: '#filosofi', title: 'Filosofi Logo', subtitle: 'Atom, Segitiga, Gelombang & Ruang Terbuka' },
+    { num: '05', href: '#layanan', title: 'Layanan Rekayasa', subtitle: 'Perancangan, Konsultasi & Integrasi Sistem' },
+    { num: '06', href: '#proses', title: 'Alur Rekayasa', subtitle: 'Metodologi Terstruktur 5-Fase' },
+    { num: '07', href: '#visi-misi', title: 'Visi & Misi', subtitle: 'Arah Strategis & Komitmen Berkelanjutan' },
+    { num: '08', href: '#mitra', title: 'Mitra & Ekosistem', subtitle: 'Jaringan Kolaborasi Industri Terbuka' },
+    { num: '09', href: '#kontak', title: 'Kontak & Konsultasi', subtitle: 'Inisiasi Sinergi & Rekayasa Presisi' },
   ];
 
   return (

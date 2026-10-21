@@ -1,7 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowUpRight, Send, MapPin, Phone, Mail, Clock, CheckCircle2 } from 'lucide-react';
 
+gsap.registerPlugin(ScrollTrigger);
+
 export default function ContactSection() {
+  const sectionRef = useRef(null);
+  const headerRef = useRef(null);
+  const formCardRef = useRef(null);
+  const infoCardRef = useRef(null);
+
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -11,24 +20,58 @@ export default function ContactSection() {
     message: '',
   });
 
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const ctx = gsap.context(() => {
+      // Cinematic Closing Entrance Sequence
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top 75%',
+        },
+      });
+
+      tl.fromTo(
+        headerRef.current,
+        { y: 35, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.9, ease: 'power3.out' }
+      );
+
+      tl.fromTo(
+        [formCardRef.current, infoCardRef.current],
+        { y: 40, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, stagger: 0.15, ease: 'power2.out' },
+        0.2
+      );
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setSubmitted(true);
   };
 
   return (
-    <section id="kontak" className="relative w-full bg-[#070E1A] text-[#F8FAFC] py-28 md:py-36 px-6 md:px-14 border-t border-white/10 z-20">
+    <section
+      id="kontak"
+      ref={sectionRef}
+      className="relative w-full bg-[#070E1A] text-[#F8FAFC] py-32 md:py-40 px-6 md:px-14 border-t border-white/10 z-20"
+    >
       <div className="max-w-7xl mx-auto">
-        {/* Section Header */}
-        <div className="border-b border-white/15 pb-10 mb-16">
+        {/* Cinematic Closing Gateway Header */}
+        <div ref={headerRef} className="border-b border-white/15 pb-12 mb-16">
           <div className="flex items-center space-x-3 mb-4 font-mono text-xs text-[#0B70AD] tracking-widest uppercase">
-            <span className="w-2 h-2 rounded-full bg-[#C91C22]" />
-            <span>[ 07 / HUBUNGI KAMI & INISIASI KERJASAMA ]</span>
+            <span className="w-2 h-2 rounded-full bg-[#C91C22] animate-pulse" />
+            <span>[ 09 // CHAPTER FINAL &bull; INISIASI KONSULTASI & KEMITRAAN ]</span>
           </div>
 
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div>
-              <h2 className="font-serif text-4xl md:text-6xl lg:text-7xl text-white tracking-tight leading-tight">
+              <h2 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white tracking-tight leading-tight">
                 Kontak & Konsultasi
               </h2>
               <div className="font-mono text-xs md:text-sm tracking-widest text-[#0B70AD] uppercase mt-3">
@@ -36,7 +79,7 @@ export default function ContactSection() {
               </div>
             </div>
 
-            <p className="font-sans text-sm md:text-base text-white/70 max-w-xl font-light leading-relaxed">
+            <p className="font-sans text-sm md:text-base text-white/75 max-w-xl font-light leading-relaxed">
               Tim kami siap mendiskusikan kebutuhan teknis, parameter spesifikasi, serta peluang kerja sama strategis untuk proyek Anda.
             </p>
           </div>
@@ -45,7 +88,7 @@ export default function ContactSection() {
         {/* 2-Column Grid: Form & Info */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
           {/* Left Column: Consultation Form (7 cols) */}
-          <div className="lg:col-span-7 bg-[#0D192E] border border-white/15 p-8 md:p-12 relative overflow-hidden">
+          <div ref={formCardRef} className="lg:col-span-7 bg-[#0D192E] border border-white/15 p-8 md:p-12 relative overflow-hidden shadow-2xl">
             {submitted ? (
               <div className="py-12 text-center space-y-4">
                 <CheckCircle2 size={48} className="mx-auto text-[#0B70AD]" />

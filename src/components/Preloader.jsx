@@ -4,44 +4,54 @@ import gsap from 'gsap';
 export default function Preloader({ onComplete }) {
   const [percent, setPercent] = useState(0);
   const containerRef = useRef(null);
+  const [shouldShow, setShouldShow] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return (
+      !window.location.search.includes('nopreload') &&
+      sessionStorage.getItem('tara_preloaded') !== 'true'
+    );
+  });
 
   useEffect(() => {
-    const isNoPreload = window.location.search.includes('nopreload') || sessionStorage.getItem('has_preloaded') === 'true';
-    if (isNoPreload) {
-      setPercent(100);
-      if (containerRef.current) {
-        containerRef.current.style.display = 'none';
-      }
+    if (!shouldShow) {
       if (onComplete) onComplete();
       return;
     }
 
     let current = 0;
     const interval = setInterval(() => {
-      current += Math.floor(Math.random() * 8) + 4;
+      current += Math.floor(Math.random() * 12) + 6;
       if (current >= 100) {
         current = 100;
         clearInterval(interval);
         setPercent(100);
-        sessionStorage.setItem('has_preloaded', 'true');
+        sessionStorage.setItem('tara_preloaded', 'true');
 
         setTimeout(() => {
-          gsap.to(containerRef.current, {
-            yPercent: -100,
-            duration: 0.9,
-            ease: 'power4.inOut',
-            onComplete: () => {
-              if (onComplete) onComplete();
-            }
-          });
-        }, 250);
+          if (containerRef.current) {
+            gsap.to(containerRef.current, {
+              yPercent: -100,
+              duration: 0.8,
+              ease: 'power3.inOut',
+              onComplete: () => {
+                setShouldShow(false);
+                if (onComplete) onComplete();
+              },
+            });
+          } else {
+            setShouldShow(false);
+            if (onComplete) onComplete();
+          }
+        }, 200);
       } else {
         setPercent(current);
       }
-    }, 28);
+    }, 24);
 
     return () => clearInterval(interval);
-  }, [onComplete]);
+  }, [shouldShow, onComplete]);
+
+  if (!shouldShow) return null;
 
   return (
     <div
@@ -57,7 +67,7 @@ export default function Preloader({ onComplete }) {
           <span className="w-2 h-2 rounded-full bg-[#0B70AD] animate-ping" />
           <span className="text-white/80">[ INISIALISASI ARSITEKTUR REKAYASA PRESISI ]</span>
         </span>
-        <span className="text-[#0B70AD] hidden sm:inline">TARA REKAYASA • 2026</span>
+        <span className="text-[#0B70AD] hidden sm:inline">TARA REKAYASA &bull; 2026</span>
       </div>
 
       {/* Center Brand */}
@@ -67,10 +77,12 @@ export default function Preloader({ onComplete }) {
             src="/assets/logo-tara-rekayasa.png"
             alt="Logo Tara Rekayasa"
             className="w-12 h-12 object-contain filter drop-shadow-[0_2px_10px_rgba(11,112,173,0.4)]"
-            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
           />
           <span className="font-mono text-xs tracking-[0.25em] text-[#0B70AD] uppercase">
-            [ STRUCTURAL • ADAPTIVE • INNOVATIVE ]
+            [ STRUCTURAL &bull; ADAPTIVE &bull; INNOVATIVE ]
           </span>
         </div>
 

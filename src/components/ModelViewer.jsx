@@ -2,22 +2,40 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
-import { Compass, Eye, Sparkles, Move, Maximize2 } from 'lucide-react';
 
+// Precise 3D key poses and Catmull-Rom spline trajectory across scenes
+// Deliberately composed corridors so model NEVER overlaps typography
+// Model actively exits (scale: 0, z: -8) during Tentang, Filosofi, Layanan, Proses, Mitra, and Contact
+// so that transitions, geometric logo reveals, horizontal storytelling, and forms have 100% unimpeded space.
 const SECTION_POSITIONS = [
-  { id: 'hero', x: 0.85, y: -0.15, z: 0.1, scale: 0.95 },
-  { id: 'tentang', x: -1.35, y: 0.0, z: 0.15, scale: 0.88 },
-  { id: 'filosofi', x: 1.35, y: -0.1, z: 0.15, scale: 0.92 },
-  { id: 'layanan', x: -1.3, y: 0.0, z: 0.1, scale: 0.86 },
-  { id: 'visi-misi', x: 1.3, y: 0.0, z: 0.2, scale: 0.88 },
-  { id: 'mitra', x: 0, y: -0.6, z: -2.2, scale: 0.45 },
-  { id: 'kontak', x: -1.2, y: 0.0, z: 0.1, scale: 0.85 },
+  // 01 Hero: Dedicated right-hand visual corridor (x: 1.35), completely free from left-hand headline
+  { id: 'hero', x: 1.35, y: -0.05, z: 0.25, scale: 0.95, rotYOffset: 0 },
+  // 02 Manifesto: Far right corridor (x: 1.85), ensuring > 220px perceived negative space from text column
+  { id: 'manifesto', x: 1.85, y: 0.05, z: -0.25, scale: 0.68, rotYOffset: 0.6 },
+  // 03 Tentang: Smoothly recedes into depth as organic white horizon wave envelops the screen
+  { id: 'tentang', x: 1.85, y: -0.6, z: -5.0, scale: 0.0, rotYOffset: 1.3 },
+  // 04 Filosofi: Completely hidden so the layered geometric logo reveal commands 100% focal attention
+  { id: 'filosofi', x: 0.0, y: -0.8, z: -8.0, scale: 0.0, rotYOffset: 2.2 },
+  // 05 Layanan: Exited completely from interactive index
+  { id: 'layanan', x: -1.6, y: -0.8, z: -8.0, scale: 0.0, rotYOffset: 3.1 },
+  // 06 Proses: Completely hidden so horizontal panels move unimpeded without visual competition
+  { id: 'proses', x: 1.2, y: -0.8, z: -8.0, scale: 0.0, rotYOffset: 3.9 },
+  // 07 Visi-Misi: Exited
+  { id: 'visi-misi', x: -1.2, y: -0.8, z: -8.0, scale: 0.0, rotYOffset: 4.7 },
+  // 08 Mitra: Exited so partner collaboration text and marquee breathe freely
+  { id: 'mitra', x: 0.0, y: -0.8, z: -8.0, scale: 0.0, rotYOffset: 5.3 },
+  // 09 Kontak: Exited so consultation form has zero obstruction
+  { id: 'kontak', x: 1.2, y: -0.8, z: -8.0, scale: 0.0, rotYOffset: 5.9 },
 ];
+
+const SPLINE_POINTS = SECTION_POSITIONS.map(p => new THREE.Vector3(p.x, p.y, p.z));
+const spatialSpline = new THREE.CatmullRomCurve3(SPLINE_POINTS, false, 'catmullrom', 0.2);
 
 export default function ModelViewer({ scrollProgress }) {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
   const [loading, setLoading] = useState(true);
+  const [webglError, setWebglError] = useState(false);
 
   // References
   const sceneRef = useRef(null);
@@ -25,7 +43,6 @@ export default function ModelViewer({ scrollProgress }) {
   const baseScaleRef = useRef(1);
   const rendererRef = useRef(null);
   const cameraRef = useRef(null);
-  const particlesRef = useRef(null);
 
   const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
   const dragRef = useRef({
@@ -40,7 +57,22 @@ export default function ModelViewer({ scrollProgress }) {
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    const canvas = canvasRef.current;
+    if (!container || !canvas) return;
+
+    // Check WebGL support
+    try {
+      const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+      if (!gl) {
+        setWebglError(true);
+        setLoading(false);
+        return;
+      }
+    } catch (e) {
+      setWebglError(true);
+      setLoading(false);
+      return;
+    }
 
     // 1. Scene setup
     const scene = new THREE.Scene();
@@ -48,42 +80,53 @@ export default function ModelViewer({ scrollProgress }) {
 
     // 2. Camera setup
     const camera = new THREE.PerspectiveCamera(
-      40,
+      38,
       window.innerWidth / window.innerHeight,
       0.1,
       100
     );
-    camera.position.set(0, 0, 5.5);
+    camera.position.set(0, 0, 5.6);
     cameraRef.current = camera;
 
-    // 3. Ultra-Crisp High-Performance Renderer Setup
-    const renderer = new THREE.WebGLRenderer({
-      canvas: canvasRef.current,
-      alpha: true,
-      antialias: true,
-      powerPreference: 'high-performance',
-    });
+    // 3. Ultra-Crisp Renderer
+    let renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        canvas,
+        alpha: true,
+        antialias: true,
+        powerPreference: 'high-performance',
+      });
+    } catch (err) {
+      console.warn('WebGL initialization fallback:', err);
+      setWebglError(true);
+      setLoading(false);
+      return;
+    }
+
+    // 3. Ultra-Crisp ACESFilmic Renderer
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.0;
+    renderer.toneMappingExposure = 0.90;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     rendererRef.current = renderer;
 
-    // 4. Subtle Studio HDRI Environment Reflections (Natural, Non-Bleaching)
+    // 4. Subtle Studio HDRI Environment Reflections
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     pmremGenerator.compileEquirectangularShader();
     scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
     pmremGenerator.dispose();
 
-    // 5. Clean, Neutral Studio Lighting (Preserves authentic Blender material colors)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.6);
+    // 5. Option B: Refined Architectural Studio Lighting
+    // Controlled neutral illumination that clarifies ribbons & geometric curvature without blowout
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
     scene.add(ambientLight);
 
-    const sunLight = new THREE.DirectionalLight(0xffffff, 2.4);
-    sunLight.position.set(5, 8, 5);
+    const sunLight = new THREE.DirectionalLight(0xffffff, 1.50);
+    sunLight.position.set(5, 7, 5);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.width = 1024;
     sunLight.shadow.mapSize.height = 1024;
@@ -91,29 +134,25 @@ export default function ModelViewer({ scrollProgress }) {
     sunLight.shadow.camera.far = 25;
     scene.add(sunLight);
 
-    const fillLight = new THREE.DirectionalLight(0xf1f5f9, 1.4);
-    fillLight.position.set(-5, 3, -3);
+    const fillLight = new THREE.DirectionalLight(0xf1f5f9, 0.55);
+    fillLight.position.set(-5, 2, -3);
     scene.add(fillLight);
 
-    const rimLight = new THREE.DirectionalLight(0xe2e8f0, 1.6);
-    rimLight.position.set(0, -4, -5);
+    const rimLight = new THREE.DirectionalLight(0xe2e8f0, 0.85);
+    rimLight.position.set(0, 3, -5);
     scene.add(rimLight);
-
-    // Soft Top Key Light (Balanced white to preserve native hue)
-    const topKeyLight = new THREE.PointLight(0xffffff, 1.5, 12);
-    topKeyLight.position.set(0, 4, 2);
-    scene.add(topKeyLight);
 
     // Soft Ground Shadow
     const shadowGeo = new THREE.PlaneGeometry(16, 16);
-    const shadowMat = new THREE.ShadowMaterial({ opacity: 0.22 });
+    const shadowMat = new THREE.ShadowMaterial({ opacity: 0.16 });
     const shadowPlane = new THREE.Mesh(shadowGeo, shadowMat);
     shadowPlane.rotation.x = -Math.PI / 2;
     shadowPlane.position.y = -1.8;
     shadowPlane.receiveShadow = true;
     scene.add(shadowPlane);
 
-    // 6. Load GLB Model preserving Blender's native materials, colors & textures
+    // 6. Load GLB Model applying Option B Refined Architectural Baseline
+    // Preserves authentic mesh geometry, vertex chain colors, and textures 100%
     const loader = new GLTFLoader();
     loader.load(
       '/model.glb',
@@ -133,20 +172,23 @@ export default function ModelViewer({ scrollProgress }) {
         baseScaleRef.current = targetScale;
         model.scale.setScalar(targetScale);
 
-        // Keep Blender's authentic colors, vertex colors, textures, and roughness intact
+        // Apply Option B PBR Material Calibration across all 39 sub-materials
+        // Retains authentic colors while providing restrained satin sheen and edge curvature
         model.traverse((child) => {
           if (child.isMesh) {
             child.castShadow = true;
             child.receiveShadow = true;
             if (child.material) {
-              const preserveMat = (mat) => {
-                mat.envMapIntensity = 0.35;
+              const applyArchitecturalMat = (mat) => {
+                mat.roughness = 0.52;
+                mat.metalness = 0.08;
+                mat.envMapIntensity = 0.22;
                 mat.needsUpdate = true;
               };
               if (Array.isArray(child.material)) {
-                child.material.forEach(preserveMat);
+                child.material.forEach(applyArchitecturalMat);
               } else {
-                preserveMat(child.material);
+                applyArchitecturalMat(child.material);
               }
             }
           }
@@ -163,6 +205,7 @@ export default function ModelViewer({ scrollProgress }) {
       undefined,
       (error) => {
         console.error('Failed to load 3D model:', error);
+        setWebglError(true);
         setLoading(false);
       }
     );
@@ -175,8 +218,8 @@ export default function ModelViewer({ scrollProgress }) {
       if (dragRef.current.isDragging) {
         const deltaX = e.clientX - dragRef.current.startX;
         const deltaY = e.clientY - dragRef.current.startY;
-        dragRef.current.targetRotationY += deltaX * 0.008;
-        dragRef.current.targetRotationX += deltaY * 0.008;
+        dragRef.current.targetRotationY += deltaX * 0.007;
+        dragRef.current.targetRotationX += deltaY * 0.007;
         dragRef.current.startX = e.clientX;
         dragRef.current.startY = e.clientY;
       }
@@ -194,7 +237,7 @@ export default function ModelViewer({ scrollProgress }) {
       dragRef.current.isDragging = false;
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
 
@@ -206,33 +249,34 @@ export default function ModelViewer({ scrollProgress }) {
     };
     window.addEventListener('resize', handleResize);
 
-    // 8. Flawless DOM-Section Dynamic Targeting Loop
+    // 8. Dynamic Section Interpolation Animation Loop
     let animationFrameId;
     let clock = new THREE.Clock();
-    let currentScale = 1.0;
+    let currentScale = 0.2; // Smooth entrance bloom matching headline stagger
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
       const elapsedTime = clock.getElapsedTime();
 
-      mouseRef.current.x += (mouseRef.current.targetX - mouseRef.current.x) * 0.05;
-      mouseRef.current.y += (mouseRef.current.targetY - mouseRef.current.y) * 0.05;
+      // Smooth mouse interpolation
+      mouseRef.current.x += (mouseRef.current.targetX - mouseRef.current.x) * 0.06;
+      mouseRef.current.y += (mouseRef.current.targetY - mouseRef.current.y) * 0.06;
 
-      dragRef.current.rotationX += (dragRef.current.targetRotationX - dragRef.current.rotationX) * 0.1;
-      dragRef.current.rotationY += (dragRef.current.targetRotationY - dragRef.current.rotationY) * 0.1;
+      dragRef.current.rotationX += (dragRef.current.targetRotationX - dragRef.current.rotationX) * 0.08;
+      dragRef.current.rotationY += (dragRef.current.targetRotationY - dragRef.current.rotationY) * 0.08;
 
       if (modelRef.current) {
-        const idleBob = Math.sin(elapsedTime * 0.8) * 0.04;
+        const idleBob = Math.sin(elapsedTime * 0.9) * 0.035;
         const isDesktop = window.innerWidth >= 1024;
 
-        // Accurate Section Tracking via Document Coordinates
+        // Continuous Section Progress Tracking
         const scrollY = window.scrollY;
         const vh = window.innerHeight;
         const viewCenter = scrollY + vh * 0.45;
 
-        let activeTarget = SECTION_POSITIONS[0];
-        let nextTarget = SECTION_POSITIONS[0];
+        let currentSectionIdx = 0;
         let blendFactor = 0;
+        const numIntervals = SECTION_POSITIONS.length - 1;
 
         for (let i = 0; i < SECTION_POSITIONS.length; i++) {
           const el = document.getElementById(SECTION_POSITIONS[i].id);
@@ -243,45 +287,78 @@ export default function ModelViewer({ scrollProgress }) {
           const bottom = top + height;
 
           if (viewCenter >= top && viewCenter <= bottom) {
-            activeTarget = SECTION_POSITIONS[i];
-            const nextIdx = Math.min(i + 1, SECTION_POSITIONS.length - 1);
-            nextTarget = SECTION_POSITIONS[nextIdx];
+            currentSectionIdx = i;
             blendFactor = Math.max(0, Math.min(1, (viewCenter - top) / height));
             break;
           } else if (viewCenter < top && i === 0) {
-            activeTarget = SECTION_POSITIONS[0];
-            nextTarget = SECTION_POSITIONS[0];
+            currentSectionIdx = 0;
             blendFactor = 0;
+            break;
+          } else if (i === numIntervals && viewCenter > bottom) {
+            currentSectionIdx = i;
+            blendFactor = 1;
             break;
           }
         }
 
-        // Interpolate between current section and next section
-        const rawX = activeTarget.x + (nextTarget.x - activeTarget.x) * blendFactor;
-        const rawY = activeTarget.y + (nextTarget.y - activeTarget.y) * blendFactor;
-        const rawZ = activeTarget.z + (nextTarget.z - activeTarget.z) * blendFactor;
-        const rawScale = activeTarget.scale + (nextTarget.scale - activeTarget.scale) * blendFactor;
+        // Normalized Catmull-Rom spline coordinate evaluation (uniform segment parameter t)
+        const rawT = Math.max(0, Math.min(1, (currentSectionIdx + blendFactor) / numIntervals));
+        const splinePos = spatialSpline.getPoint(rawT);
 
-        // Apply desktop vs mobile column offset so model NEVER obscures typography
-        const targetX = isDesktop ? rawX : rawX * 0.35;
-        const targetY = rawY + idleBob;
-        const targetZ = isDesktop ? rawZ : (rawZ < -1.5 ? rawZ : -1.8);
-        const targetScale = isDesktop ? rawScale : rawScale * 0.62;
+        // Smooth Hermite blend for scale and rotation offset to eliminate angular jerk
+        const activeTarget = SECTION_POSITIONS[currentSectionIdx];
+        const nextTarget = SECTION_POSITIONS[Math.min(currentSectionIdx + 1, numIntervals)];
+        const smoothBlend = blendFactor * blendFactor * (3 - 2 * blendFactor); // Smoothstep
+        const rawScale = activeTarget.scale + (nextTarget.scale - activeTarget.scale) * smoothBlend;
+        const targetRotYOffset = (activeTarget.rotYOffset || 0) + ((nextTarget.rotYOffset || 0) - (activeTarget.rotYOffset || 0)) * smoothBlend;
+
+        // Apply column offset on desktop vs mobile so typography is never obscured
+        let targetX = splinePos.x;
+        let targetY = splinePos.y + idleBob;
+        let targetZ = splinePos.z;
+        let targetScale = rawScale;
+
+        if (!isDesktop) {
+          targetZ = -2.6;
+          targetScale = currentSectionIdx === 0 ? rawScale * 0.42 : rawScale * 0.32;
+
+          if (currentSectionIdx === 0) {
+            targetX = 0;
+            const stageEl = document.getElementById('hero-3d-stage');
+            if (stageEl) {
+              const rect = stageEl.getBoundingClientRect();
+              const stageCenterY = rect.top + rect.height * 0.5;
+              // Map screen pixels to 3D camera space (~5.65 units high at z=-2.6)
+              targetY = (vh * 0.5 - stageCenterY) * (5.65 / vh) + idleBob * 0.5;
+            } else {
+              targetY = -1.2;
+            }
+          } else {
+            targetX = splinePos.x * 0.15;
+            targetY = splinePos.y * 0.4 - 0.45 + idleBob * 0.5;
+          }
+        }
 
         // Base continuous rotation + drag + mouse parallax
-        const baseRotY = scrollY * 0.0018 + elapsedTime * 0.1;
-        const baseRotX = mouseRef.current.y * 0.12;
+        const baseRotY = scrollY * 0.0016 + elapsedTime * 0.08 + targetRotYOffset;
+        const baseRotX = mouseRef.current.y * 0.1;
 
-        // Smooth spatial lerp
-        modelRef.current.position.x += (targetX - modelRef.current.position.x) * 0.07;
-        modelRef.current.position.y += (targetY - modelRef.current.position.y) * 0.07;
-        modelRef.current.position.z += (targetZ - modelRef.current.position.z) * 0.07;
+        // Smooth spatial lerp with damped inertia
+        modelRef.current.position.x += (targetX - modelRef.current.position.x) * 0.065;
+        modelRef.current.position.y += (targetY - modelRef.current.position.y) * 0.065;
+        modelRef.current.position.z += (targetZ - modelRef.current.position.z) * 0.065;
 
-        currentScale += (targetScale - currentScale) * 0.07;
-        modelRef.current.scale.setScalar(currentScale);
+        currentScale += (targetScale - currentScale) * 0.065;
+        if (currentScale < 0.008) {
+          modelRef.current.visible = false;
+          modelRef.current.scale.setScalar(0);
+        } else {
+          modelRef.current.visible = true;
+          modelRef.current.scale.setScalar(currentScale);
+        }
 
-        modelRef.current.rotation.y += (baseRotY + dragRef.current.rotationY + mouseRef.current.x * 0.2 - modelRef.current.rotation.y) * 0.08;
-        modelRef.current.rotation.x += (baseRotX + dragRef.current.rotationX - modelRef.current.rotation.x) * 0.08;
+        modelRef.current.rotation.y += (baseRotY + dragRef.current.rotationY + mouseRef.current.x * 0.2 - modelRef.current.rotation.y) * 0.07;
+        modelRef.current.rotation.x += (baseRotX + dragRef.current.rotationX - modelRef.current.rotation.x) * 0.07;
       }
 
       renderer.render(scene, camera);
@@ -312,6 +389,18 @@ export default function ModelViewer({ scrollProgress }) {
       renderer.dispose();
     };
   }, []);
+
+  if (webglError) {
+    return (
+      <div className="fixed inset-0 z-10 pointer-events-none flex items-center justify-center">
+        <div className="bg-[#0D192E]/90 border border-white/10 p-6 max-w-sm text-center">
+          <p className="font-mono text-xs text-white/60">
+            [ WebGL Accelerated Visualization Offline ]
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

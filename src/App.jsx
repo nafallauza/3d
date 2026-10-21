@@ -1,21 +1,28 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Lenis from 'lenis';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
 import ModelViewer from './components/ModelViewer';
-import AboutSection from './components/AboutSection';
+import CinematicHero from './components/CinematicHero';
+import EngineeringManifesto from './components/EngineeringManifesto';
+import SvgSectionTransition from './components/SvgSectionTransition';
+import AboutPrinciples from './components/AboutPrinciples';
 import FilosofiSection from './components/FilosofiSection';
 import LayananSection from './components/LayananSection';
+import ProsesSection from './components/ProsesSection';
 import VisiMisiSection from './components/VisiMisiSection';
 import MitraSection from './components/MitraSection';
 import ContactSection from './components/ContactSection';
-import TextHighlight from './components/TextHighlight';
 import Preloader from './components/Preloader';
 import CustomCursor from './components/CustomCursor';
 import MarqueeTicker from './components/MarqueeTicker';
 import NavigationDrawer from './components/NavigationDrawer';
 import ConsultationModal from './components/ConsultationModal';
-import MagneticButton from './components/MagneticButton';
 import { ambientSound } from './utils/ambientAudio';
-import { Clock, Menu, ArrowUpRight, Sparkles, MapPin, Phone, Mail, ShieldCheck, Compass } from 'lucide-react';
+import { Clock, Menu, ArrowUpRight, Volume2, VolumeX, ShieldCheck } from 'lucide-react';
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function App() {
   const scrollProgress = useRef(0);
@@ -24,40 +31,89 @@ export default function App() {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isConsultationOpen, setIsConsultationOpen] = useState(false);
   const [consultationTopic, setConsultationTopic] = useState(null);
+  const [scrollPercent, setScrollPercent] = useState(0);
+  const [timeWIB, setTimeWIB] = useState('');
 
   const handleOpenConsultation = (topic = null) => {
     setConsultationTopic(topic);
     setIsConsultationOpen(true);
   };
 
-  // Initialize Lenis Smooth Scroll
+  // Update Live WIB Clock
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setTimeWIB(
+        now.toLocaleTimeString('id-ID', {
+          timeZone: 'Asia/Jakarta',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        })
+      );
+    };
+    updateTime();
+    const timer = setInterval(updateTime, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Initialize Lenis + GSAP ScrollTrigger Integration
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.35,
+      duration: 1.4,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       wheelMultiplier: 0.9,
-      touchMultiplier: 1.8,
+      touchMultiplier: 1.6,
     });
 
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
+    lenis.on('scroll', ScrollTrigger.update);
+
+    const tickerCallback = (time) => {
+      lenis.raf(time * 1000);
+    };
+
+    gsap.ticker.add(tickerCallback);
+    gsap.ticker.lagSmoothing(0);
 
     const handleScroll = () => {
       const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
       if (totalScroll > 0) {
-        scrollProgress.current = window.scrollY / totalScroll;
+        const p = window.scrollY / totalScroll;
+        scrollProgress.current = p;
+        setScrollPercent(Math.round(p * 100));
       }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
 
+    // Refresh ScrollTrigger once DOM & web fonts stabilize
+    const refreshTimer = setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 500);
+
+    // Smooth anchor navigation powered by Lenis
+    const handleAnchorClick = (e) => {
+      const anchor = e.target.closest('a[href^="#"]');
+      if (anchor) {
+        const hash = anchor.getAttribute('href');
+        if (hash && hash !== '#') {
+          const targetEl = document.querySelector(hash);
+          if (targetEl) {
+            e.preventDefault();
+            lenis.scrollTo(targetEl, { offset: -70, duration: 1.2 });
+          }
+        }
+      }
+    };
+
+    document.addEventListener('click', handleAnchorClick);
+
     return () => {
       lenis.destroy();
+      gsap.ticker.remove(tickerCallback);
       window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('click', handleAnchorClick);
     };
   }, []);
 
@@ -82,10 +138,10 @@ export default function App() {
       {/* Custom Precision Cursor */}
       <CustomCursor />
 
-      {/* 3D WebGL Canvas Rendering the Native Model */}
+      {/* 3D WebGL Canvas Rendering Native Model with Authentic Colors */}
       <ModelViewer scrollProgress={scrollProgress} />
 
-      {/* Viewport Technical Crosshairs (Engineering Editorial Framing) */}
+      {/* Viewport Technical Crosshairs (Architectural Framing) */}
       <div className="fixed inset-4 md:inset-8 pointer-events-none z-40 border border-white/5 hidden lg:block">
         <span className="absolute -top-2 -left-2 text-[#0B70AD] font-mono text-xs">+</span>
         <span className="absolute -top-2 -right-2 text-[#0B70AD] font-mono text-xs">+</span>
@@ -94,50 +150,69 @@ export default function App() {
       </div>
 
       {/* Fixed Luxury Minimalist Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#070E1A]/85 backdrop-blur-md border-b border-white/10 px-6 md:px-14 py-4 flex items-center justify-between transition-all duration-300">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#070E1A]/90 backdrop-blur-md border-b border-white/10 px-4 sm:px-6 md:px-14 py-3 sm:py-4 flex items-center justify-between transition-all duration-300">
+        {/* Scroll Progress Bar at very bottom of header */}
+        <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-white/5">
+          <div
+            className="h-full bg-gradient-to-r from-[#1B3459] via-[#0B70AD] to-[#C91C22] transition-all duration-100"
+            style={{ width: `${scrollPercent}%` }}
+          />
+        </div>
+
         {/* Left: Menu Trigger & Fast Navigation */}
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center space-x-4 sm:space-x-6">
           <button
             onClick={() => setIsNavOpen(true)}
             data-cursor="MENU"
-            className="group flex items-center space-x-3 border border-white/20 hover:border-[#0B70AD] bg-[#0D192E] px-4 py-2 font-mono text-xs text-white tracking-widest uppercase transition-all cursor-pointer"
+            className="group flex items-center space-x-2 sm:space-x-3 border border-white/20 hover:border-[#0B70AD] bg-[#0D192E] px-3 sm:px-4 py-1.5 sm:py-2 font-mono text-[11px] sm:text-xs text-white tracking-widest uppercase transition-all cursor-pointer"
           >
-            <div className="flex flex-col space-y-1 w-4">
+            <div className="flex flex-col space-y-1 w-3.5 sm:w-4">
               <span className="h-[1.5px] w-full bg-white group-hover:bg-[#0B70AD] transition-colors" />
               <span className="h-[1.5px] w-3/4 bg-white group-hover:bg-[#0B70AD] transition-colors" />
             </div>
             <span>[ MENU ]</span>
           </button>
 
-          <nav className="hidden lg:flex items-center space-x-6 font-mono text-xs text-white/60">
+          <nav className="hidden xl:flex items-center space-x-6 font-mono text-xs text-white/60">
+            <a href="#hero" className="hover:text-white transition-colors">Beranda</a>
+            <a href="#manifesto" className="hover:text-white transition-colors">Manifesto</a>
             <a href="#tentang" className="hover:text-white transition-colors">Tentang</a>
             <a href="#filosofi" className="hover:text-white transition-colors">Filosofi</a>
             <a href="#layanan" className="hover:text-white transition-colors">Layanan</a>
+            <a href="#proses" className="hover:text-white transition-colors">Alur</a>
             <a href="#mitra" className="hover:text-white transition-colors">Mitra</a>
           </nav>
         </div>
 
         {/* Center: Brand Identity Logo */}
-        <div className="flex items-center space-x-3">
-          <a href="#hero" className="flex items-center space-x-3 group">
+        <div className="flex items-center space-x-2">
+          <a href="#hero" className="flex items-center space-x-2 sm:space-x-2.5 group">
             <img
               src="/assets/logo-tara-rekayasa.png"
               alt="Logo Tara Rekayasa"
-              className="w-8 h-8 object-contain filter drop-shadow-[0_2px_8px_rgba(11,112,173,0.3)] transition-transform group-hover:scale-105"
-              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              className="w-7 h-7 sm:w-8 sm:h-8 object-contain filter drop-shadow-[0_2px_8px_rgba(11,112,173,0.3)] transition-transform group-hover:scale-105"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
             />
-            <span className="font-serif text-xl md:text-2xl tracking-tight font-bold uppercase text-white group-hover:text-[#0B70AD] transition-colors">
-              Tara Rekayasa
+            <span className="font-serif text-base sm:text-xl md:text-2xl tracking-tight font-bold uppercase text-white group-hover:text-[#0B70AD] transition-colors">
+              <span className="hidden xs:inline">Tara Rekayasa</span>
+              <span className="inline xs:hidden">Tara</span>
             </span>
           </a>
         </div>
 
-        {/* Right: Ambient Audio & Direct Consultation Action */}
-        <div className="flex items-center space-x-3 md:space-x-5">
+        {/* Right: Live WIB Clock, Ambient Sound, & Direct Consultation Action */}
+        <div className="flex items-center space-x-2 sm:space-x-4">
+          <div className="font-mono text-[10px] tracking-wider text-white/60 hidden lg:flex items-center space-x-2 border-r border-white/15 pr-4">
+            <Clock size={12} className="text-[#0B70AD]" />
+            <span>WIB {timeWIB}</span>
+          </div>
+
           <button
             onClick={handleToggleSound}
             data-cursor="AUDIO"
-            className="group hidden sm:flex items-center space-x-2 border border-white/15 hover:border-[#0B70AD] px-3 py-2 font-mono text-[10px] tracking-wider text-white transition-all bg-[#0D192E] cursor-pointer"
+            className="group hidden sm:flex items-center space-x-2 border border-white/15 hover:border-[#0B70AD] px-3 py-1.5 sm:py-2 font-mono text-[10px] tracking-wider text-white transition-all bg-[#0D192E] cursor-pointer"
             title="Toggle Ambient Audio"
           >
             <div className="flex items-end space-x-[2px] h-3 w-3">
@@ -151,172 +226,49 @@ export default function App() {
           <button
             onClick={() => handleOpenConsultation()}
             data-cursor="KONSULTASI"
-            className="border border-[#0B70AD] bg-[#1B3459] hover:bg-[#0B70AD] px-4 py-2 font-mono text-xs text-white uppercase tracking-wider transition-all cursor-pointer font-semibold shadow-md"
+            className="border border-[#0B70AD] bg-[#1B3459] hover:bg-[#0B70AD] px-3 sm:px-4 py-1.5 sm:py-2 font-mono text-[11px] sm:text-xs text-white uppercase tracking-wider transition-all cursor-pointer font-semibold shadow-md whitespace-nowrap"
           >
             [ KONSULTASI ]
           </button>
         </div>
       </header>
 
-      {/* Main Flow */}
+      {/* Main Flow Across 9 Storyboard Scenes */}
       <main className="relative z-20 pointer-events-auto">
-        {/* =========================================
-            SECTION 1: BERANDA / HERO (Full Viewport)
-        ========================================= */}
-        <section
-          id="hero"
-          className="relative min-h-screen flex flex-col justify-between px-6 md:px-14 pt-32 pb-16"
-        >
-          {/* Top Section Content */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 border-b border-white/10 pb-10 items-start">
-            <div className="md:col-span-7">
-              <div className="font-mono text-xs tracking-[0.25em] text-[#0B70AD] uppercase mb-4 flex items-center space-x-2">
-                <span>✦ ✦ ✦</span>
-                <span>STRUKTURAL • PRESISI • ADAPTIF</span>
-                <span>✦ ✦ ✦</span>
-              </div>
+        {/* SCENE 01: CINEMATIC HERO */}
+        <CinematicHero onOpenConsultation={handleOpenConsultation} />
 
-              <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl tracking-tight leading-[1.02] text-white mb-6">
-                Presisi dalam Detail.<br />
-                <span className="text-[#0B70AD]">Inovasi dalam Rekayasa.</span>
-              </h1>
+        {/* SCENE 02: ENGINEERING MANIFESTO (Continuous Spatial Handoff) */}
+        <EngineeringManifesto />
 
-              <p className="font-sans text-base md:text-lg text-white/80 max-w-2xl font-light leading-relaxed">
-                Tara Rekayasa mengedepankan ketelitian, inovasi, dan kolaborasi dalam membangun pendekatan rekayasa yang terstruktur dan adaptif.
-              </p>
-            </div>
-
-            {/* Macro Metrics */}
-            <div className="md:col-span-5 grid grid-cols-2 gap-6 md:border-l md:border-white/10 md:pl-8 self-center">
-              <div className="p-4 bg-[#0D192E]/60 border border-white/10">
-                <div className="font-serif text-3xl md:text-4xl text-[#0B70AD] font-bold">100%</div>
-                <div className="font-mono text-[10px] text-white/60 mt-1 uppercase tracking-wider">
-                  Disiplin Presisi
-                </div>
-              </div>
-              <div className="p-4 bg-[#0D192E]/60 border border-white/10">
-                <div className="font-serif text-3xl md:text-4xl text-white font-bold">Terstruktur</div>
-                <div className="font-mono text-[10px] text-white/60 mt-1 uppercase tracking-wider">
-                  Analisis Metodologis
-                </div>
-              </div>
-              <div className="p-4 bg-[#0D192E]/60 border border-white/10">
-                <div className="font-serif text-3xl md:text-4xl text-[#C91C22] font-bold">Adaptif</div>
-                <div className="font-mono text-[10px] text-white/60 mt-1 uppercase tracking-wider">
-                  Respon Dinamis
-                </div>
-              </div>
-              <div className="p-4 bg-[#0D192E]/60 border border-white/10">
-                <div className="font-serif text-3xl md:text-4xl text-white font-bold">Sinergis</div>
-                <div className="font-mono text-[10px] text-white/60 mt-1 uppercase tracking-wider">
-                  Kolaborasi Terbuka
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Section: Explore Action & Micro Navigation */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end pt-8">
-            <div className="md:col-span-8">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 font-mono text-xs text-white/70">
-                <div>
-                  <span className="text-[#0B70AD] block mb-1 uppercase">[ FOKUS REKAYASA ]</span>
-                  <span className="font-medium text-white">Pemodelan & Solusi Terstruktur</span>
-                </div>
-                <div>
-                  <span className="text-[#C91C22] block mb-1 uppercase">[ STANDAR MUTU ]</span>
-                  <span className="font-medium text-white">Validasi & Toleransi Ketat</span>
-                </div>
-                <div>
-                  <span className="text-white/40 block mb-1 uppercase">[ INTERAKSI 3D ]</span>
-                  <span className="font-medium text-white">Drag / Putar 360° Bebas</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="md:col-span-4 flex justify-start md:justify-end space-x-4">
-              <a
-                href="#tentang"
-                className="inline-flex items-center space-x-2 border border-white/20 hover:border-[#0B70AD] bg-[#0D192E] text-white hover:text-[#0B70AD] px-6 py-3.5 font-mono text-xs uppercase tracking-widest transition-all cursor-pointer font-medium"
-              >
-                <span>[ JELAJAHI ]</span>
-                <ArrowUpRight size={14} />
-              </a>
-
-              <button
-                onClick={() => handleOpenConsultation()}
-                className="inline-flex items-center space-x-2 bg-[#0B70AD] hover:bg-[#1B3459] text-white px-6 py-3.5 font-mono text-xs uppercase tracking-widest transition-all cursor-pointer font-semibold border border-[#0B70AD]"
-              >
-                <span>[ HUBUNGI KAMI ]</span>
-                <ArrowUpRight size={14} />
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Kinetic Precision Marquee */}
+        {/* VELOCITY-PACED MARQUEE TICKER */}
         <MarqueeTicker />
 
-        {/* =========================================
-            PROLOGUE: SCROLL-SCRUB EDITORIAL STATEMENT
-        ========================================= */}
-        <section
-          id="prologue"
-          className="min-h-[70vh] px-6 md:px-14 py-28 border-t border-white/10 flex flex-col justify-center relative overflow-hidden bg-[#070E1A]"
-        >
-          <div className="max-w-6xl mx-auto w-full">
-            <div className="flex items-center space-x-3 mb-8">
-              <span className="w-2 h-2 rounded-full bg-[#0B70AD] animate-pulse" />
-              <span className="font-mono text-xs tracking-widest text-[#0B70AD] uppercase">
-                [ 01.5 / MANIFESTO REKAYASA ]
-              </span>
-            </div>
+        {/* PARAMETRIC ARCHITECTURAL SVG TRANSITION (Dark to Light) */}
+        <SvgSectionTransition direction="enter" fill="#F4F6F9" />
 
-            {/* Interactive Scroll-Scrub Highlighted Quote */}
-            <TextHighlight
-              text="“Di balik setiap konstruksi kokoh dan solusi teknis yang berdaya tahan tinggi, terdapat komitmen mendalam terhadap presisi kalkulasi, kejelasan struktur, dan keberanian untuk beradaptasi melampaui batas konvensional.”"
-              className="font-serif text-3xl md:text-5xl lg:text-6xl text-white tracking-tight mb-8 leading-[1.2]"
-            />
+        {/* SCENE 03: TENTANG KAMI / PRINSIP REKAYASA (Light Editorial Surface) */}
+        <AboutPrinciples onOpenConsultation={() => handleOpenConsultation('tentang')} />
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-white/10 pt-6 font-mono text-xs text-white/60">
-              <span className="text-[#0B70AD] uppercase tracking-wider">
-                TARA REKAYASA • PRINSIP FUNDAMENTAL
-              </span>
-              <span className="mt-2 sm:mt-0 text-white/40">
-                SCROLL KE BAWAH UNTUK EKSPLORASI DETAIL
-              </span>
-            </div>
-          </div>
-        </section>
+        {/* PARAMETRIC ARCHITECTURAL SVG TRANSITION (Light to Dark) */}
+        <SvgSectionTransition direction="exit" fill="#F4F6F9" />
 
-        {/* =========================================
-            SECTION 2: TENTANG KAMI
-        ========================================= */}
-        <AboutSection onOpenConsultation={() => handleOpenConsultation('tentang')} />
-
-        {/* =========================================
-            SECTION 3: FILOSOFI LOGO (4 ELEMEN RESMI)
-        ========================================= */}
+        {/* SCENE 04: FILOSOFI LOGO (4 Unique Visual Diagrams) */}
         <FilosofiSection />
 
-        {/* =========================================
-            SECTION 4: LAYANAN REKAYASA
-        ========================================= */}
+        {/* SCENE 05: LAYANAN REKAYASA (Interactive Index) */}
         <LayananSection onOpenConsultation={(svc) => handleOpenConsultation(svc)} />
 
-        {/* =========================================
-            SECTION 5: VISI & MISI
-        ========================================= */}
+        {/* SCENE 06: ALUR REKAYASA (Cinematic Pinned Horizontal Storytelling) */}
+        <ProsesSection onOpenConsultation={() => handleOpenConsultation('alur')} />
+
+        {/* SCENE 07: VISI & MISI (Strategic Pillars) */}
         <VisiMisiSection />
 
-        {/* =========================================
-            SECTION 6: MITRA & EKOSISTEM
-        ========================================= */}
+        {/* SCENE 08: MITRA & EKOSISTEM (Ecosystem Grid) */}
         <MitraSection onOpenConsultation={() => handleOpenConsultation('kemitraan')} />
 
-        {/* =========================================
-            SECTION 7: KONTAK & KONSULTASI
-        ========================================= */}
+        {/* SCENE 09: KONTAK & KONSULTASI */}
         <ContactSection />
 
         {/* FOOTER */}
@@ -328,7 +280,9 @@ export default function App() {
                   src="/assets/logo-tara-rekayasa.png"
                   alt="Tara Rekayasa"
                   className="w-7 h-7 object-contain"
-                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
                 />
                 <span className="font-serif text-2xl font-bold uppercase text-white">
                   Tara Rekayasa
@@ -338,28 +292,30 @@ export default function App() {
                 Presisi dalam Detail. Inovasi dalam Rekayasa. Pendekatan terstruktur dan adaptif untuk menjawab tantangan industri masa depan.
               </p>
               <div className="text-[10px] text-[#0B70AD]">
-                [ INTEGRITAS REKAYASA • METODOLOGI TERUKUR ]
+                [ INTEGRITAS REKAYASA &bull; METODOLOGI TERUKUR ]
               </div>
             </div>
 
             <div className="md:col-span-4 space-y-2 text-xs">
               <div className="text-white font-semibold mb-3 uppercase tracking-wider text-[11px]">
-                [ NAVIGASI HALAMAN ]
+                [ NAVIGASI DIREKTORI ]
               </div>
               <div className="grid grid-cols-2 gap-2 text-white/70">
-                <a href="#hero" className="hover:text-[#0B70AD] transition-colors">Beranda</a>
-                <a href="#tentang" className="hover:text-[#0B70AD] transition-colors">Tentang Kami</a>
-                <a href="#filosofi" className="hover:text-[#0B70AD] transition-colors">Filosofi Logo</a>
-                <a href="#layanan" className="hover:text-[#0B70AD] transition-colors">Layanan</a>
-                <a href="#visi-misi" className="hover:text-[#0B70AD] transition-colors">Visi & Misi</a>
-                <a href="#mitra" className="hover:text-[#0B70AD] transition-colors">Mitra</a>
-                <a href="#kontak" className="hover:text-[#0B70AD] transition-colors">Kontak</a>
+                <a href="#hero" className="hover:text-[#0B70AD] transition-colors">01. Beranda</a>
+                <a href="#manifesto" className="hover:text-[#0B70AD] transition-colors">02. Manifesto</a>
+                <a href="#tentang" className="hover:text-[#0B70AD] transition-colors">03. Tentang Kami</a>
+                <a href="#filosofi" className="hover:text-[#0B70AD] transition-colors">04. Filosofi Logo</a>
+                <a href="#layanan" className="hover:text-[#0B70AD] transition-colors">05. Layanan</a>
+                <a href="#proses" className="hover:text-[#0B70AD] transition-colors">06. Alur Rekayasa</a>
+                <a href="#visi-misi" className="hover:text-[#0B70AD] transition-colors">07. Visi & Misi</a>
+                <a href="#mitra" className="hover:text-[#0B70AD] transition-colors">08. Mitra</a>
+                <a href="#kontak" className="hover:text-[#0B70AD] transition-colors">09. Kontak</a>
               </div>
             </div>
 
             <div className="md:col-span-3 text-left md:text-right">
               <div className="text-white font-semibold mb-3 uppercase tracking-wider text-[11px]">
-                [ KONSULTASI CEPAT ]
+                [ KONSULTASI REKAYASA ]
               </div>
               <button
                 onClick={() => handleOpenConsultation()}
@@ -368,18 +324,18 @@ export default function App() {
                 [ INISIASI KONSULTASI ]
               </button>
               <p className="text-[10px] text-white/40 mt-3">
-                Layanan komunikasi resmi terkonfirmasi.
+                Saluran komunikasi resmi terverifikasi.
               </p>
             </div>
           </div>
 
           <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between text-[10px] text-white/40">
             <div>
-              © 2026 TARA REKAYASA. SELURUH HAK CIPTA DILINDUNGI.
+              &copy; 2026 TARA REKAYASA. SELURUH HAK CIPTA DILINDUNGI.
             </div>
             <div className="mt-2 sm:mt-0 flex space-x-6">
               <span>PENDEKATAN TERSTRUKTUR & ADAPTIF</span>
-              <span>•</span>
+              <span>&bull;</span>
               <span className="text-[#0B70AD]">PRESISI REKAYASA</span>
             </div>
           </div>
