@@ -8,12 +8,12 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 // Model actively exits (scale: 0, z: -8) during Tentang, Filosofi, Layanan, Proses, Mitra, and Contact
 // so that transitions, geometric logo reveals, horizontal storytelling, and forms have 100% unimpeded space.
 const SECTION_POSITIONS = [
-  // 01 Hero: Dedicated right-hand visual corridor (x: 1.35), completely free from left-hand headline
-  { id: 'hero', x: 1.35, y: -0.05, z: 0.25, scale: 0.95, rotYOffset: 0 },
-  // 02 Manifesto: Far right corridor (x: 1.85), ensuring > 220px perceived negative space from text column
-  { id: 'manifesto', x: 1.85, y: 0.05, z: -0.25, scale: 0.68, rotYOffset: 0.6 },
-  // 03 Tentang: Smoothly recedes into depth as organic white horizon wave envelops the screen
-  { id: 'tentang', x: 1.85, y: -0.6, z: -5.0, scale: 0.0, rotYOffset: 1.3 },
+  // 01 Hero: Dedicated right-hand visual corridor (x: 1.38), scaled gracefully (0.82)
+  { id: 'hero', x: 1.38, y: -0.05, z: 0.15, scale: 0.82, rotYOffset: 0 },
+  // 02 Manifesto: Left-hand visual corridor (x: -1.35), identical constant scale (0.82)
+  { id: 'manifesto', x: -1.35, y: -0.05, z: 0.15, scale: 0.82, rotYOffset: 0.6 },
+  // 03 Tentang: Smoothly recedes under the white horizon wave
+  { id: 'tentang', x: -1.35, y: -0.05, z: -4.0, scale: 0.0, rotYOffset: 1.3 },
   // 04 Filosofi: Completely hidden so the layered geometric logo reveal commands 100% focal attention
   { id: 'filosofi', x: 0.0, y: -0.8, z: -8.0, scale: 0.0, rotYOffset: 2.2 },
   // 05 Layanan: Exited completely from interactive index
@@ -210,12 +210,18 @@ export default function ModelViewer({ scrollProgress }) {
       }
     );
 
-    // 7. Mouse & Orbit Handlers
+    // 7. Mouse, Touch & Orbit Handlers
     const handleMouseMove = (e) => {
       mouseRef.current.targetX = (e.clientX / window.innerWidth - 0.5) * 2;
       mouseRef.current.targetY = (e.clientY / window.innerHeight - 0.5) * 2;
 
       if (dragRef.current.isDragging) {
+        // Clear any text selection that might happen during drag
+        if (window.getSelection) {
+          const sel = window.getSelection();
+          if (sel && sel.rangeCount > 0) sel.removeAllRanges();
+        }
+
         const deltaX = e.clientX - dragRef.current.startX;
         const deltaY = e.clientY - dragRef.current.startY;
         dragRef.current.targetRotationY += deltaX * 0.007;
@@ -226,20 +232,85 @@ export default function ModelViewer({ scrollProgress }) {
     };
 
     const handleMouseDown = (e) => {
-      if (!e.target.closest('button, input, select, a, textarea')) {
-        dragRef.current.isDragging = true;
-        dragRef.current.startX = e.clientX;
-        dragRef.current.startY = e.clientY;
+      // Ignore interactive controls
+      if (e.target.closest('button, input, select, a, textarea')) {
+        return;
       }
+
+      // Do NOT start 3D rotation if clicking on interactive controls or editorial text columns
+      if (e.target.closest('#hero-editorial-column, #manifesto-editorial-column')) {
+        return;
+      }
+
+      // Allow 3D rotation everywhere as long as model is on-screen (before Tentang white surface completely covers the screen)
+      const tentangEl = document.getElementById('tentang');
+      if (tentangEl) {
+        const tRect = tentangEl.getBoundingClientRect();
+        if (tRect.top <= 0) {
+          return;
+        }
+      }
+
+      dragRef.current.isDragging = true;
+      dragRef.current.startX = e.clientX;
+      dragRef.current.startY = e.clientY;
+
+      // Prevent native browser text selection gesture
+      e.preventDefault();
+      if (window.getSelection) {
+        window.getSelection().removeAllRanges();
+      }
+      document.body.style.userSelect = 'none';
+      document.body.style.webkitUserSelect = 'none';
     };
 
     const handleMouseUp = () => {
+      if (dragRef.current.isDragging) {
+        dragRef.current.isDragging = false;
+        document.body.style.userSelect = '';
+        document.body.style.webkitUserSelect = '';
+      }
+    };
+
+    const handleTouchStart = (e) => {
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        if (e.target.closest('button, input, select, a, textarea, #hero-editorial-column, #manifesto-editorial-column')) return;
+
+        const tentangEl = document.getElementById('tentang');
+        if (tentangEl) {
+          const tRect = tentangEl.getBoundingClientRect();
+          if (tRect.top <= 0) return;
+        }
+
+        dragRef.current.isDragging = true;
+        dragRef.current.startX = touch.clientX;
+        dragRef.current.startY = touch.clientY;
+      }
+    };
+
+    const handleTouchMove = (e) => {
+      if (dragRef.current.isDragging && e.touches.length === 1) {
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - dragRef.current.startX;
+        const deltaY = touch.clientY - dragRef.current.startY;
+        dragRef.current.targetRotationY += deltaX * 0.007;
+        dragRef.current.targetRotationX += deltaY * 0.007;
+        dragRef.current.startX = touch.clientX;
+        dragRef.current.startY = touch.clientY;
+      }
+    };
+
+    const handleTouchEnd = () => {
       dragRef.current.isDragging = false;
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd);
 
     const handleResize = () => {
       if (!camera || !renderer) return;
@@ -269,74 +340,72 @@ export default function ModelViewer({ scrollProgress }) {
         const idleBob = Math.sin(elapsedTime * 0.9) * 0.035;
         const isDesktop = window.innerWidth >= 1024;
 
-        // Continuous Section Progress Tracking
+        // Continuous Dynamic Stage Tracking & Corridor Interpolation
         const scrollY = window.scrollY;
         const vh = window.innerHeight;
-        const viewCenter = scrollY + vh * 0.45;
 
-        let currentSectionIdx = 0;
-        let blendFactor = 0;
-        const numIntervals = SECTION_POSITIONS.length - 1;
+        const heroEl = document.getElementById('hero');
+        const manifestoEl = document.getElementById('manifesto');
+        const tentangEl = document.getElementById('tentang');
 
-        for (let i = 0; i < SECTION_POSITIONS.length; i++) {
-          const el = document.getElementById(SECTION_POSITIONS[i].id);
-          if (!el) continue;
-          const rect = el.getBoundingClientRect();
-          const top = rect.top + scrollY;
-          const height = rect.height;
-          const bottom = top + height;
+        const manifestoRect = manifestoEl ? manifestoEl.getBoundingClientRect() : null;
+        const tentangRect = tentangEl ? tentangEl.getBoundingClientRect() : null;
 
-          if (viewCenter >= top && viewCenter <= bottom) {
-            currentSectionIdx = i;
-            blendFactor = Math.max(0, Math.min(1, (viewCenter - top) / height));
-            break;
-          } else if (viewCenter < top && i === 0) {
-            currentSectionIdx = 0;
-            blendFactor = 0;
-            break;
-          } else if (i === numIntervals && viewCenter > bottom) {
-            currentSectionIdx = i;
-            blendFactor = 1;
-            break;
+        const BASE_SCALE = 0.82;
+        let targetX = 1.38;
+        let targetY = -0.05 + idleBob;
+        let targetZ = 0.15;
+        let targetScale = BASE_SCALE;
+        let targetRotYOffset = 0;
+
+        // Check if white section (Tentang) has completely enveloped the viewport
+        const isTentangArrived = tentangRect && tentangRect.top <= 0;
+
+        if (isTentangArrived) {
+          targetScale = 0;
+          targetZ = -4.0;
+        } else if (!manifestoRect || manifestoRect.top >= vh) {
+          // 100% in Hero: Anchor model firmly in right corridor
+          targetX = 1.38;
+          targetY = -0.05 + idleBob;
+          targetZ = 0.15;
+          targetScale = BASE_SCALE;
+          targetRotYOffset = 0;
+        } else if (manifestoRect.top > 0) {
+          // Smooth glide across from Hero (right) to Manifesto (left)
+          // Progress t from 0 (manifesto enters bottom) to 1 (manifesto reaches top)
+          const t = (vh - manifestoRect.top) / vh;
+          const smoothT = t * t * (3 - 2 * t);
+
+          targetX = 1.38 + (-1.35 - 1.38) * smoothT;
+          targetScale = BASE_SCALE; // Exactly same size!
+          targetZ = 0.15;
+          targetY = -0.05 + idleBob;
+          targetRotYOffset = 0.6 * smoothT;
+        } else {
+          // Inside Manifesto section and following all the way to the white section!
+          // Model stays in left corridor at EXACT SAME SIZE (BASE_SCALE 0.82):
+          targetX = -1.35;
+          targetScale = BASE_SCALE; // Exactly same size!
+          targetZ = 0.15;
+          targetY = -0.05 + idleBob;
+          targetRotYOffset = 0.6;
+
+          // As the white transition curve scrolls into view near the bottom,
+          // the model stays at full size and perfectly interactive until the white curve covers it:
+          if (tentangRect && tentangRect.top < vh * 0.35) {
+            const exitProgress = Math.max(0, Math.min(1, (vh * 0.35 - tentangRect.top) / (vh * 0.35)));
+            const smoothExit = exitProgress * exitProgress * (3 - 2 * exitProgress);
+            targetZ = 0.15 + (-3.5 - 0.15) * smoothExit;
+            targetScale = BASE_SCALE * (1 - smoothExit);
           }
         }
 
-        // Normalized Catmull-Rom spline coordinate evaluation (uniform segment parameter t)
-        const rawT = Math.max(0, Math.min(1, (currentSectionIdx + blendFactor) / numIntervals));
-        const splinePos = spatialSpline.getPoint(rawT);
-
-        // Smooth Hermite blend for scale and rotation offset to eliminate angular jerk
-        const activeTarget = SECTION_POSITIONS[currentSectionIdx];
-        const nextTarget = SECTION_POSITIONS[Math.min(currentSectionIdx + 1, numIntervals)];
-        const smoothBlend = blendFactor * blendFactor * (3 - 2 * blendFactor); // Smoothstep
-        const rawScale = activeTarget.scale + (nextTarget.scale - activeTarget.scale) * smoothBlend;
-        const targetRotYOffset = (activeTarget.rotYOffset || 0) + ((nextTarget.rotYOffset || 0) - (activeTarget.rotYOffset || 0)) * smoothBlend;
-
-        // Apply column offset on desktop vs mobile so typography is never obscured
-        let targetX = splinePos.x;
-        let targetY = splinePos.y + idleBob;
-        let targetZ = splinePos.z;
-        let targetScale = rawScale;
-
         if (!isDesktop) {
           targetZ = -2.6;
-          targetScale = currentSectionIdx === 0 ? rawScale * 0.42 : rawScale * 0.32;
-
-          if (currentSectionIdx === 0) {
-            targetX = 0;
-            const stageEl = document.getElementById('hero-3d-stage');
-            if (stageEl) {
-              const rect = stageEl.getBoundingClientRect();
-              const stageCenterY = rect.top + rect.height * 0.5;
-              // Map screen pixels to 3D camera space (~5.65 units high at z=-2.6)
-              targetY = (vh * 0.5 - stageCenterY) * (5.65 / vh) + idleBob * 0.5;
-            } else {
-              targetY = -1.2;
-            }
-          } else {
-            targetX = splinePos.x * 0.15;
-            targetY = splinePos.y * 0.4 - 0.45 + idleBob * 0.5;
-          }
+          targetScale = (manifestoRect && manifestoRect.top < vh * 0.5) ? 0.32 : 0.38;
+          targetX = 0;
+          targetY = -0.2 + idleBob * 0.5;
         }
 
         // Base continuous rotation + drag + mouse parallax
@@ -371,7 +440,12 @@ export default function ModelViewer({ scrollProgress }) {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('resize', handleResize);
+      document.body.style.userSelect = '';
+      document.body.style.webkitUserSelect = '';
 
       if (modelRef.current) {
         modelRef.current.traverse((child) => {

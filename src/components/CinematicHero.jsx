@@ -92,7 +92,7 @@ export default function CinematicHero({ onOpenConsultation }) {
     <section
       id="hero"
       ref={heroRef}
-      className="relative min-h-screen flex flex-col justify-between px-6 md:px-14 pt-32 pb-12 z-20 overflow-hidden"
+      className="relative min-h-screen flex flex-col justify-between px-6 md:px-14 pt-32 pb-12 z-20 overflow-hidden select-none"
     >
       {/* Background Architectural Watermark */}
       <div className="absolute right-0 top-1/4 select-none pointer-events-none opacity-[0.03] font-serif text-[18vw] leading-none text-white font-bold tracking-tighter">
@@ -102,8 +102,11 @@ export default function CinematicHero({ onOpenConsultation }) {
       {/* Main Hero Staging: Left Editorial Narrative + Right Dedicated 3D Corridor */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10 my-auto py-4">
         {/* Left Column: Monolithic Headline, Discipline Code, & Direct CTAs */}
-        <div className="lg:col-span-7 xl:col-span-6 space-y-6">
-          <div className="flex items-center space-x-3 font-mono text-[11px] text-[#0B70AD] tracking-[0.25em] uppercase font-semibold">
+        <div
+          id="hero-editorial-column"
+          className="lg:col-span-7 xl:col-span-6 space-y-6 select-none"
+        >
+          <div className="flex items-center space-x-3 font-mono text-[11px] text-[#0B70AD] tracking-[0.25em] uppercase font-semibold select-none">
             <span className="w-2 h-2 rounded-full bg-[#0B70AD] animate-pulse" />
             <span>[ DISIPLIN REKAYASA &bull; METODOLOGI TERUKUR ]</span>
           </div>
@@ -111,15 +114,15 @@ export default function CinematicHero({ onOpenConsultation }) {
           {/* Monumental Editorial Headline with Overflow Line Masks */}
           <h1
             ref={headlineRef}
-            className="font-serif text-4xl sm:text-6xl md:text-7xl xl:text-8xl tracking-tight leading-[1.08]"
+            className="font-serif text-4xl sm:text-6xl md:text-7xl xl:text-8xl tracking-tight leading-[1.08] select-none"
           >
             <div className="overflow-hidden pb-3 pt-1">
-              <span className="hero-line-inner block text-white">
+              <span className="hero-line-inner block text-white select-none">
                 Presisi dalam Detail.
               </span>
             </div>
             <div className="overflow-hidden pb-4 pt-1">
-              <span className="hero-line-inner block text-[#0B70AD]">
+              <span className="hero-line-inner block text-[#0B70AD] select-none">
                 Inovasi dalam Rekayasa.
               </span>
             </div>
@@ -127,7 +130,7 @@ export default function CinematicHero({ onOpenConsultation }) {
 
           <p
             ref={subtextRef}
-            className="font-sans text-base md:text-lg text-white/75 max-w-xl font-light leading-relaxed pt-2"
+            className="font-sans text-base md:text-lg text-white/75 max-w-xl font-light leading-relaxed pt-2 select-none"
           >
             Tara Rekayasa mengedepankan ketelitian kalkulasi, integritas struktur, dan kolaborasi metodologis dalam membangun pendekatan rekayasa yang terstruktur serta adaptif.
           </p>

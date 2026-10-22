@@ -16,37 +16,39 @@ export default function EngineeringManifesto() {
       const words = textRef.current.querySelectorAll('.manifesto-word');
 
       // Optical de-blur scrub synchronized with Lenis scroll
+      // Words visibly transition from dark (#334155, blur) to bright white (#FFFFFF, crisp)
+      // The illumination is accelerated so that by the time the text is centered/full in view, all words are 100% white
       gsap.fromTo(
         words,
         {
           opacity: 0.18,
-          filter: 'blur(8px)',
+          filter: 'blur(7px)',
           color: '#334155',
         },
         {
           opacity: 1,
           filter: 'blur(0px)',
           color: '#FFFFFF',
-          stagger: 0.06,
+          stagger: 0.03,
           ease: 'power1.out',
           scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top 75%',
-            end: 'bottom 45%',
-            scrub: 0.8,
+            trigger: textRef.current,
+            start: 'top 78%',
+            end: 'top 28%',
+            scrub: 0.6,
           },
         }
       );
 
       // Smooth exit handoff into incoming Tentang Kami curtain
       gsap.to(textRef.current, {
-        opacity: 0.2,
-        y: -45,
-        ease: 'none',
+        opacity: 0.15,
+        y: -40,
+        ease: 'power1.in',
         scrollTrigger: {
           trigger: sectionRef.current,
           start: 'bottom 80%',
-          end: 'bottom 35%',
+          end: 'bottom 30%',
           scrub: 0.6,
         },
       });
@@ -64,20 +66,30 @@ export default function EngineeringManifesto() {
     <section
       id="manifesto"
       ref={sectionRef}
-      className="relative min-h-[90vh] px-6 md:px-14 py-36 border-t border-white/10 flex flex-col justify-center bg-transparent z-20 overflow-hidden"
+      className="relative min-h-[90vh] px-6 md:px-14 py-36 border-t border-white/10 flex flex-col justify-center bg-transparent z-20 overflow-hidden select-none"
     >
       <div className="max-w-6xl mx-auto w-full relative z-10">
-        {/* Section Pill Label */}
-        <div className="flex items-center space-x-3 mb-10">
-          <span className="w-2 h-2 rounded-full bg-[#0B70AD] animate-pulse" />
-          <span className="font-mono text-xs tracking-widest text-[#0B70AD] uppercase">
-            [ 02 // MANIFESTO REKAYASA &bull; FILOSOFI KARYA ]
-          </span>
-        </div>
-
-        {/* Big Optical De-blur Statement in 2-Column Editorial Grid */}
+        {/* Big Optical De-blur Statement in 2-Column Editorial Grid: 3D Left + Text Right */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center mb-12">
-          <div className="lg:col-span-6 xl:col-span-6 max-w-xl">
+          {/* Left Column: Dedicated open visual corridor for 3D model stage */}
+          <div
+            id="manifesto-3d-stage"
+            className="hidden lg:block lg:col-span-6 xl:col-span-6 min-h-[420px] pointer-events-none select-none order-2 lg:order-1"
+          />
+
+          {/* Right Column: Section Pill & Manifesto Statement */}
+          <div
+            id="manifesto-editorial-column"
+            className="lg:col-span-6 xl:col-span-6 max-w-xl lg:ml-auto select-none order-1 lg:order-2"
+          >
+            {/* Section Pill Label */}
+            <div className="flex items-center space-x-3 mb-8">
+              <span className="w-2 h-2 rounded-full bg-[#0B70AD] animate-pulse" />
+              <span className="font-mono text-xs tracking-widest text-[#0B70AD] uppercase">
+                [ 02 // MANIFESTO REKAYASA &bull; FILOSOFI KARYA ]
+              </span>
+            </div>
+
             <div
               ref={textRef}
               className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] tracking-tight leading-[1.22] select-none"
@@ -92,9 +104,6 @@ export default function EngineeringManifesto() {
               ))}
             </div>
           </div>
-
-          {/* Dedicated open visual corridor for 3D model stage (> 180px negative space) */}
-          <div className="hidden lg:block lg:col-span-6 xl:col-span-6 min-h-[360px] pointer-events-none select-none" />
         </div>
 
         {/* Technical Coordinate Footnote */}
