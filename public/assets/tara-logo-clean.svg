@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="80 180 680 650" fill="none">
+    <!-- Molecular Ligand Bonds (Struktur Atom / Ligand) -->
+    <!-- Left Bond: Top Vertex Ring to Mid-Left Atom -->
+    <path d="M 352 292 Q 312 346 286 398" stroke="#F4F6F9" stroke-opacity="0.9" stroke-width="16" stroke-linecap="round"/>
+    <!-- Right Bond: Mid-Right Atom to Bottom-Right Vertex Ring -->
+    <path d="M 476 368 Q 505 422 524 472" stroke="#F4F6F9" stroke-opacity="0.9" stroke-width="16" stroke-linecap="round"/>
+    <!-- Bottom Bond: Bottom-Left Vertex Ring to Mid-Bottom Atom -->
+    <path d="M 262 512 Q 332 526 396 526" stroke="#F4F6F9" stroke-opacity="0.9" stroke-width="16" stroke-linecap="round"/>
+
+    <!-- 3 Primary Vertex Open Rings (Atom Nodes) -->
+    <circle cx="380" cy="252" r="38" stroke="#F4F6F9" stroke-opacity="0.9" stroke-width="14" fill="#070E1A"/>
+    <circle cx="218" cy="504" r="38" stroke="#F4F6F9" stroke-opacity="0.9" stroke-width="14" fill="#070E1A"/>
+    <circle cx="542" cy="504" r="38" stroke="#F4F6F9" stroke-opacity="0.9" stroke-width="14" fill="#070E1A"/>
+
+    <!-- 3 Secondary Blue Ligand Atoms -->
+    <circle cx="454" cy="322" r="24" fill="#0B70AD" fill-opacity="0.85" stroke="#F4F6F9" stroke-opacity="0.35" stroke-width="1.5"/>
+    <circle cx="268" cy="422" r="24" fill="#0B70AD" fill-opacity="0.85" stroke="#F4F6F9" stroke-opacity="0.35" stroke-width="1.5"/>
+    <circle cx="446" cy="526" r="24" fill="#0B70AD" fill-opacity="0.85" stroke="#F4F6F9" stroke-opacity="0.35" stroke-width="1.5"/>
+
+    <!-- Central Red Core Atom (Presisi Fundamental) -->
+    
+    <circle cx="380" cy="418" r="56" fill="#C91C22" fill-opacity="0.82" stroke="#F4F6F9" stroke-opacity="0.3" stroke-width="1.5"/>
+
+    <!-- Dynamic Fluid Waves (Garis Gelombang Dinamis / Waves) -->
+    <path d="M 118 655 C 215 560, 345 565, 470 618 C 565 658, 650 655, 725 612 C 680 668, 575 685, 455 642 C 335 598, 215 595, 118 655 Z" fill="#0B70AD" fill-opacity="1"/>
+    <path d="M 155 688 C 250 622, 365 632, 475 680 C 558 715, 635 712, 695 692 C 642 745, 535 752, 435 708 C 335 665, 238 658, 155 688 Z" fill="#0B70AD" fill-opacity="0.85"/>
+    <path d="M 195 724 C 285 692, 375 712, 468 748 C 535 772, 602 768, 650 742 C 588 798, 465 812, 338 782 C 385 780, 435 772, 475 760 C 378 748, 285 718, 195 724 Z" fill="#0B70AD" fill-opacity="0.7"/>
+
+
+</svg>

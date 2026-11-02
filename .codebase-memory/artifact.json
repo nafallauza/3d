@@ -1,0 +1,11 @@
+{
+    "schema_version": 2,
+    "commit": "668cd8a3ea0b5452a68d2670a0ebd5abfa81f7d1",
+    "indexed_at": "2026-10-30T17:23:20Z",
+    "project": "tara-rekayasa",
+    "nodes": 387,
+    "edges": 1082,
+    "original_size": 4587520,
+    "compressed_size": 764238,
+    "compression_level": 3
+}
