@@ -15,7 +15,8 @@ export function initLogoPhilosophyInteractions() {
       const selected = control.dataset.logoFilter === next;
       control.setAttribute('aria-expanded', String(selected));
       control.closest('[data-logo-pillar]').classList.toggle('is-active', selected);
-      control.querySelector('.tara-identity_toggle').textContent = selected ? '−' : '+';
+      const toggle = control.querySelector('.tara-identity_toggle');
+      if (toggle) toggle.textContent = selected ? '−' : '+';
       const panel = document.getElementById(control.getAttribute('aria-controls'));
       if (panel) panel.hidden = !selected;
     });
@@ -24,7 +25,7 @@ export function initLogoPhilosophyInteractions() {
       spot.setAttribute('aria-expanded', String(spot.dataset.hotspot === next));
     });
     const control = controls.find(item => item.dataset.logoFilter === next);
-    if (caption) caption.textContent = control ? `0${next} / ${control.children[1].textContent}` : 'Empat prinsip, satu identitas';
+    if (caption) caption.textContent = control ? control.querySelector('span')?.textContent || '' : 'Empat prinsip, satu identitas';
   }
   controls.forEach((control, index) => {
     control.addEventListener('click', () => select(control.dataset.logoFilter, true), options);
